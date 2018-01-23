@@ -34,19 +34,25 @@ implementation
 procedure TForm1.Button1Click(Sender: TObject);
 var
   f : TextFile;
-  c : string;
+  c : char;
   i : integer;
+  token, tokenAux : string;
 begin
   AssignFile(f, 'fuente.txt'); //Asigna apuntador del archivo de texto a la variable f
   reset(f); //Abrimos el archivo como solo lectura
-  readln(f,c);
+  read(f,c);
   i := 0;
-  while not eof(f) do
-  begin
-    Memo1.Lines[i]:=c;
+  repeat
+    read(f,c);
+    //Análisis léxico
+    token := '';
+    while (c <> ' ') and (c <> chr(9)) and (c <> chr(13)) and (c <> chr(10)) do begin
+          token:= token + c;
+          read(f,c);
+    end;
+    Memo1.Lines[i]:=token;
     inc(i);
-    readln(f,c);
-  end;
+  until eof(f);
   closefile(f);
 end; //Fin
 
