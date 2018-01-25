@@ -1,5 +1,1 @@
-int main 
-abc = 0
-3ab = 1.3 
-ab+c 
-a 
+int main a + 3ab ab+c

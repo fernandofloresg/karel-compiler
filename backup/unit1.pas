@@ -34,11 +34,6 @@ implementation
 type
   stringArray = array of string;
 
-function noEsSeparador(c : char) : boolean;
-begin
-  result := ((c <> ' ') and (c <> chr(9)) and (c <> chr(13)) and (c <> chr(10)))
-end;
-
 function esPalabraReservada(token : string) : boolean;
 var
   reservadoArray : stringArray;
@@ -52,6 +47,29 @@ for i := low(reservadoArray) to high(reservadoArray) do
     begin
       result := true;
     end;
+end;
+
+function esSimbolo(token : string) : boolean;
+var
+  simbolosArray : stringArray;
+  i : integer;
+begin
+  //busca palabras reservadas
+simbolosArray := stringArray.create('#','+','-','*');
+result := false;
+for i := low(simbolosArray) to high(simbolosArray) do
+  if token = simbolosArray[i] then
+    begin
+      result := true;
+    end;
+end;
+
+function noEsSeparador(c : char) : boolean;
+var
+  expresion : boolean;
+begin
+  expresion := ((c <> ' ') and (c <> chr(9)) and (c <> chr(13)) and (c <> chr(10)));
+  result := expresion and not esSimbolo(c);
 end;
 
 function esNumero(token : string) : boolean;
@@ -84,7 +102,7 @@ begin
         begin
           for letra in token do
             begin
-              if ( not (token[j] in digitos)) and (not (token[j] in alfabeto)) then
+              if (not (token[j] in digitos)) and (not (token[j] in alfabeto)) then
                 exit(5);
               inc(j);
             end;
@@ -107,10 +125,6 @@ begin
   end;
 
 function analizaToken(token : string) : integer;
-var
-j : integer;
-letra : char;
-
 begin
 if esPalabraReservada(token) then
   exit(1);
@@ -118,17 +132,22 @@ if esPalabraReservada(token) then
 if esNumero(token) then
   exit(2);
 
+if esSimbolo(token) then
+  exit(6);
+
 exit(esIdentificador(token));
 
 result := 0;
 end;
+
+
 
 procedure TForm1.Button1Click(Sender: TObject);
 var
   f : TextFile;
   caracter : char;
   i : integer;
-  token, tokenAux, tipo : string;
+  token, tokenAux, tipo, tipoTokenAux : string;
 begin
   AssignFile(f, 'fuente.txt'); //Asigna apuntador del archivo de texto a la variable f
   reset(f); //Abrimos el archivo como solo lectura
@@ -138,6 +157,7 @@ begin
     //Análisis léxico
     token := '';
     tipo := '';
+    tipoTokenAux := '';
     while noEsSeparador(caracter) do begin
           token:= token + caracter;
           read(f,caracter);
@@ -150,8 +170,19 @@ begin
          3 : tipo := 'identificador';
          4 : tipo := 'error, un identificador no puede iniciar con un numero';
          5 : tipo := 'error, simbolo no especificado dentro de identificador';
+         6 : tipo := 'simbolo';
     end;
-    Memo1.Lines[i]:= token + ',' + tokenaux + tipo;
+
+    if esSimbolo(tokenaux) then
+      begin
+          tipoTokenAux := 'simbolo';
+          Memo1.Lines[i]:= token + ',' + '' + tipo;
+          Memo1.Lines[i]:= tokenaux + ',' + '' + tipoTokenAux;
+      end;
+    else
+      begin
+        Memo1.Lines[i]:= token + ',' + tokenaux + tipo;
+      end;
     inc(i);
   until eof(f);
   closefile(f);
