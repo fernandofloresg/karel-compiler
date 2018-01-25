@@ -95,13 +95,15 @@ begin
         begin
            for letra in token do
             begin
-              inc(j);
               if not (token[j] in digitos) then
                 exit(4);
+              inc(j);
             end;
           result := 3;
         end;
     end;
+    if (j = length(token)) and (token[j] in alfabeto) then
+      exit(3);
   end;
 
 function analizaToken(token : string) : integer;
@@ -124,7 +126,7 @@ end;
 procedure TForm1.Button1Click(Sender: TObject);
 var
   f : TextFile;
-  c : char;
+  caracter : char;
   i : integer;
   token, tokenAux, tipo : string;
 begin
@@ -132,15 +134,15 @@ begin
   reset(f); //Abrimos el archivo como solo lectura
   i := 0;
   repeat
-    read(f,c);
+    read(f,caracter);
     //Análisis léxico
     token := '';
     tipo := '';
-    while noEsSeparador(c) do begin
-          token:= token + c;
-          read(f,c);
+    while noEsSeparador(caracter) do begin
+          token:= token + caracter;
+          read(f,caracter);
     end;
-    tokenaux := c;
+    tokenaux := caracter;
 
     case analizaToken(token) of
          1 : tipo := 'palabra reservada';
@@ -155,12 +157,9 @@ begin
   closefile(f);
 end; //Fin
 
-
-
 procedure TForm1.Memo1Change(Sender: TObject);
 begin
 
 end;
 
 end.
-
