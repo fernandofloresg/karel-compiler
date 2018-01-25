@@ -39,28 +39,86 @@ begin
   result := ((c <> ' ') and (c <> chr(9)) and (c <> chr(13)) and (c <> chr(10)))
 end;
 
+function esPalabraReservada(token : string) : boolean;
+var
+  reservadoArray : stringArray;
+  i : integer;
+begin
+  //busca palabras reservadas
+reservadoArray := stringArray.create('include','main','int','float');
+result := false;
+for i := low(reservadoArray) to high(reservadoArray) do
+  if token = reservadoArray[i] then
+    begin
+      result := true;
+    end;
+end;
+
+function esNumero(token : string) : boolean;
+var
+  num : Double;
+begin
+  //busca numeros
+  result := false;
+  if(TryStrToFloat(token, num)) then
+    begin
+      result := true;
+    end;
+end;
+
 function esIdentificador(token : string) : integer;
+const
+  alfabeto = ['a'..'z', 'A'..'Z'];
+  digitos = ['0' .. '9'];
+var
+  j : integer;
+  letra : char;
 begin
-
-end;
-
-function esNumero(token : string) : integer;
-begin
-
-end;
+  //busca identificadores
+  j := 1;
+  result := 0;
+  if j < length(token) then
+    begin
+      //si el primer caracter es letra, lo demás no puede ser simbolo
+      if token[j] in alfabeto then
+        begin
+          for letra in token do
+            begin
+              if ( not (token[j] in digitos)) and (not (token[j] in alfabeto)) then
+                exit(5);
+              inc(j);
+            end;
+          result := 3;
+        end;
+      //si el primer numero lo demás no puede ser caracter o simbolo
+      if token[j] in digitos then
+        begin
+           for letra in token do
+            begin
+              if not (token[j] in digitos) then
+                exit(4);
+              inc(j);
+            end;
+          result := 3;
+        end;
+    end;
+  end;
 
 function analizaToken(token : string) : integer;
 var
-reservadoArray : stringArray;
-i, iValue, iCode: integer;
+j : integer;
+letra : char;
 
 begin
-reservadoArray := stringArray.create('include','main','int','float');
-for i := Low(reservadoArray) to High(reservadoArray) do
-  if token = reservadoArray[i] then
-    Exit(1);
+if esPalabraReservada(token) then
+  exit(1);
 
+if esNumero(token) then
+  exit(2);
 
+exit(esIdentificador(token));
+
+result := 0;
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -86,8 +144,12 @@ begin
 
     case analizaToken(token) of
          1 : tipo := 'palabra reservada';
+         2 : tipo := 'numero';
+         3 : tipo := 'identificador';
+         4 : tipo := 'error, un identificador no puede iniciar con un numero';
+         5 : tipo := 'error, simbolo no especificado dentro de identificador';
     end;
-    Memo1.Lines[i]:=token + ',' + tokenaux + tipo;
+    Memo1.Lines[i]:= token + ',' + tokenaux + tipo;
     inc(i);
   until eof(f);
   closefile(f);
